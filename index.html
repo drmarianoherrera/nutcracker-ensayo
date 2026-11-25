@@ -610,13 +610,13 @@ ${orns}
 const synth=window.speechSynthesis;let voices=[];let tok=0;
 function loadV(){if(synth)voices=synth.getVoices()}
 if(synth){loadV();synth.onvoiceschanged=loadV}
-const BAD=/albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|kathy|ralph|grandma|grandpa|rocko|eloquence|compact/i;
-const PREF={f:['samantha','ava','allison','susan','zoe','nicky','karen','moira','tessa','serena','fiona','google us english','aria','jenny','zira','sandy','shelley','flo','amelie','audrey','marie'],
- m:['daniel','alex','tom','aaron','evan','nathan','arthur','oliver','rishi','google uk english male','guy','david','mark','reed','eddy','thomas','nicolas']};
+const BAD=/albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|kathy|ralph|grandma|grandpa|rocko|eddy|flo|reed|sandy|shelley|eloquence|compact/i;
+const PREF={f:['samantha','ava','allison','susan','zoe','nicky','karen','moira','tessa','serena','fiona','google us english','aria','jenny','zira','amelie','audrey','marie'],
+ m:['daniel','alex','tom','aaron','evan','nathan','arthur','oliver','rishi','google uk english male','guy','david','mark','thomas','nicolas']};
 function pickVoice(lg,g,slot){const pool=voices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith(lg)&&!BAD.test(v.name));if(!pool.length)return null;
  const sex=g==='m'?'m':'f',list=PREF[sex];
  const score=v=>{const n=v.name.toLowerCase();let i=list.findIndex(x=>n.includes(x));let sc=i<0?100:i;if(/enhanced|premium|natural|neural/.test(n))sc-=50;if(!/en-us|en-gb|fr-fr|en_us|en_gb|fr_fr/i.test(v.lang))sc+=20;return sc};
- const good=pool.map(v=>[score(v),v]).sort((a,b)=>a[0]-b[0]);const top=good.filter(x=>x[0]<100);const c=(top.length?top:good).slice(0,3).map(x=>x[1]);
+ const usgb=pool.filter(v=>/en-us|en-gb|en_us|en_gb|fr/i.test(v.lang));const good=(usgb.length?usgb:pool).map(v=>[score(v),v]).sort((a,b)=>a[0]-b[0]);const top=good.filter(x=>x[0]<100);const c=(top.length?top:good).slice(0,3).map(x=>x[1]);
  return c[(slot||0)%c.length]}
 const aud=new Audio();aud.preload='auto';let unlocked=false;
 document.addEventListener('pointerdown',()=>{if(unlocked)return;unlocked=true;try{aud.src='data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//WreyTRUoAWgBgkOAGbZHBgG1OF6zM82DWbZaUmMBptgQhGjsyYqc9ae9XFz280948NMBWInljyzsNRFLPWdnZGWrddDsjK1unuSrVN9jJsK8KuQtQCtMBjCEtImISdNKJOopIpBFpNSMbIHCSRpRR5iakjTiyzLhchUUBwCgyKiweBv/7UsQbg8isVNoMPMjAAAA0gAAABEVFGmgqK////9bP/6XCykxBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';const sil=aud.src;aud.play().then(()=>{if(aud.src===sil)aud.pause()}).catch(()=>{})}catch(e){}},{capture:true});
@@ -635,7 +635,7 @@ function sayTTS(e,onEnd,my){if(!synth){onEnd&&onEnd();return}
  const fin=()=>{if(finished||my!==tok)return;finished=true;onEnd&&onEnd()};
  const nxt=(retry)=>{if(my!==tok)return;if(i>=parts.length){fin();return}
   const txt=parts[i].trim();if(!txt){i++;nxt();return}
-  const u=new SpeechSynthesisUtterance(txt);u.lang=lg;if(v)u.voice=v;u.rate=rate;u.pitch=pitch;
+  const u=new SpeechSynthesisUtterance(txt);u.lang=lg;if(v)u.voice=v;u.rate=rate;u.pitch=pitch;u.volume=1;
   let started=false,ended=false;u.onstart=()=>{started=true};
   u.onend=()=>{if(ended)return;ended=true;i++;setTimeout(()=>nxt(false),60)};
   u.onerror=ev=>{if(ended||my!==tok)return;ended=true;
